@@ -1,4 +1,5 @@
 /*
+
   Name: Josue Trejo Ruiz
   ID: 1002232581
 
@@ -38,6 +39,7 @@
 #include <signal.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <sys/types.h>
 
 #define WHITESPACE " \t\n" // We want to split our command line up into tokens
                            // so we need to define what delimits our tokens.
@@ -96,12 +98,11 @@ int main()
 
     // Now print the tokenized input as a debug check
     // \TODO Remove this code and replace with your shell functionality
-
-    int token_index = 0;
-    for (token_index = 0; token_index < token_count; token_index++)
-    {
-      printf("token[%d] = %s\n", token_index, token[token_index]);
-    }
+    // int token_index = 0;
+    // for (token_index = 0; token_index < token_count; token_index++)
+    // {
+    //   printf("token[%d] = %s\n", token_index, token[token_index]);
+    // }
 
     // If the user enters "exit" or "quit", terminate the shell with status 0
     if (strcmp(token[0], "exit") == 0 || strcmp(token[0], "quit") == 0)
@@ -109,8 +110,28 @@ int main()
       exit(0);
     }
 
-    (head_ptr);
+    pid_t pid = fork(); // Create a child process
+
+    if (pid == -1)
+    {
+      return -1;
+    }
+    else if (pid == 0) // Child process
+    {
+      if (execve(token[0], token, NULL) == -1)
+      {
+        fprintf(stderr, "%s: Command not found.\n", token[0]);
+        exit(1);
+      }
+    }
+    else
+    {
+      wait(NULL);
+    }
+
+    free(head_ptr);
   }
+
   return 0;
   // e2520ca2-76f3-90d6-0242ac120003
 }
