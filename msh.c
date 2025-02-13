@@ -48,7 +48,9 @@
 
 #define MAX_COMMAND_SIZE 255 // The maximum command-line size
 
-#define MAX_NUM_ARGUMENTS 5 // Mav shell only supports four arguments
+// Increased size to 12 to account for ten arguments.
+// We need a size of 12 to account for the command and the NULL terminator
+#define MAX_NUM_ARGUMENTS 12 // Mav shell only supports ten arguments
 
 int main()
 {
@@ -79,7 +81,7 @@ int main()
 
     char *working_string = strdup(command_string);
 
-    // we are going to move the working_string pointer so
+    // we are going to move the working_string pointer to
     // keep track of its original value so we can deallocate
     // the correct amount at the end
     char *head_ptr = working_string;
@@ -98,11 +100,11 @@ int main()
 
     // Now print the tokenized input as a debug check
     // \TODO Remove this code and replace with your shell functionality
-    // int token_index = 0;
-    // for (token_index = 0; token_index < token_count; token_index++)
-    // {
-    //   printf("token[%d] = %s\n", token_index, token[token_index]);
-    // }
+    int token_index = 0;
+    for (token_index = 0; token_index < token_count; token_index++)
+    {
+      printf("token[%d] = %s\n", token_index, token[token_index]);
+    }
 
     // If the user enters "exit" or "quit", terminate the shell with status 0
     if (strcmp(token[0], "exit") == 0 || strcmp(token[0], "quit") == 0)
