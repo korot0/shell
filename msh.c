@@ -1,3 +1,9 @@
+/*
+  Name: Josue Trejo Ruiz
+  ID: 1002232581
+
+*/
+
 // The MIT License (MIT)
 //
 // Copyright (c) 2016 Trevor Bakker
@@ -30,6 +36,8 @@
 #include <errno.h>
 #include <string.h>
 #include <signal.h>
+#include <stdbool.h>
+#include <stdlib.h>
 
 #define WHITESPACE " \t\n" // We want to split our command line up into tokens
                            // so we need to define what delimits our tokens.
@@ -95,7 +103,13 @@ int main()
       printf("token[%d] = %s\n", token_index, token[token_index]);
     }
 
-    free(head_ptr);
+    // If the user enters "exit" or "quit", terminate the shell with status 0
+    if (strcmp(token[0], "exit") == 0 || strcmp(token[0], "quit") == 0)
+    {
+      exit(0);
+    }
+
+    (head_ptr);
   }
   return 0;
   // e2520ca2-76f3-90d6-0242ac120003
