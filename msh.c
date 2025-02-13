@@ -52,8 +52,23 @@
 // We need a size of 12 to account for the command and the NULL terminator
 #define MAX_NUM_ARGUMENTS 12 // Mav shell only supports ten arguments
 
+#define PID_HISTORY_SIZE 15
+
+// Circular array structure
+typedef struct
+{
+  pid_t pids[PID_HISTORY_SIZE];
+  int count; // Keep track of how many PIDs are stored
+} PidHistory;
+
+// Function prototypes
+void printPidHistory(PidHistory *ph);
+void addPid(PidHistory *ph, pid_t pid);
+
 int main()
 {
+
+  PidHistory pidHistory = {.count = 0};
 
   char *command_string = (char *)malloc(MAX_COMMAND_SIZE);
 
@@ -68,7 +83,7 @@ int main()
     // inputs something since fgets returns NULL when there
     // is no input
     while (!fgets(command_string, MAX_COMMAND_SIZE, stdin))
-      ;
+      ; // placeholder for until a valid input is read
 
     /* Parse input */
     char *token[MAX_NUM_ARGUMENTS];
@@ -98,13 +113,13 @@ int main()
       token_count++;
     }
 
-    // Now print the tokenized input as a debug check
-    // \TODO Remove this code and replace with your shell functionality
-    int token_index = 0;
-    for (token_index = 0; token_index < token_count; token_index++)
-    {
-      printf("token[%d] = %s\n", token_index, token[token_index]);
-    }
+    // // Now print the tokenized input as a debug check
+    // // \TODO Remove this code and replace with your shell functionality
+    // int token_index = 0;
+    // for (token_index = 0; token_index < token_count; token_index++)
+    // {
+    //   printf("token[%d] = %s\n", token_index, token[token_index]);
+    // }
 
     // Ignore blank line
     if (token[0] != NULL)
@@ -127,6 +142,12 @@ int main()
         }
         continue;
       }
+      // pidhistory command
+      if (strcmp(token[0], "pidhistory") == 0)
+      {
+        printPidHistory(&pidHistory);
+        continue;
+      }
     }
 
     pid_t pid = fork(); // Create a child process
@@ -146,6 +167,8 @@ int main()
     }
     else
     {
+      addPid(&pidHistory, pid);
+      printf("%d\n", pid); // Store pid in circular array
       wait(NULL);
     }
 
@@ -154,4 +177,32 @@ int main()
 
   return 0;
   // e2520ca2-76f3-90d6-0242ac120003
+}
+
+void addPid(PidHistory *ph, pid_t pid)
+{
+  if (ph->count == PID_HISTORY_SIZE)
+  {
+    for (int i = 0; i < PID_HISTORY_SIZE; i++)
+    {
+      ph->pids[i - 1] = ph->pids[i];
+    }
+    ph->count--;
+  }
+  ph->pids[ph->count] = pid;
+  ph->count++;
+}
+
+void printPidHistory(PidHistory *ph)
+{
+  if (ph->count == 0)
+  {
+    printf("No pid history yet.\n");
+    return;
+  }
+
+  for (int i = 0; i < ph->count; i++)
+  {
+    printf("%d: %d\n", i, ph->pids[i]);
+  }
 }
