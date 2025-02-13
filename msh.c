@@ -114,6 +114,19 @@ int main()
       {
         exit(0);
       }
+      // cd command
+      if (strcmp(token[0], "cd") == 0)
+      {
+        if (token[1] == NULL)
+        {
+          chdir(getenv("HOME"));
+        }
+        else
+        {
+          chdir(token[1]);
+        }
+        continue;
+      }
     }
 
     pid_t pid = fork(); // Create a child process
