@@ -118,11 +118,11 @@ int main()
     }
     else if (pid == 0) // Child process
     {
-      if (execve(token[0], token, NULL) == -1)
+      if (execvp(token[0], token) == -1)
       {
         fprintf(stderr, "%s: Command not found.\n", token[0]);
-        exit(1);
       }
+      exit(1);
     }
     else
     {
