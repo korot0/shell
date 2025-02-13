@@ -106,10 +106,14 @@ int main()
       printf("token[%d] = %s\n", token_index, token[token_index]);
     }
 
-    // If the user enters "exit" or "quit", terminate the shell with status 0
-    if (strcmp(token[0], "exit") == 0 || strcmp(token[0], "quit") == 0)
+    // Ignore blank line
+    if (token[0] != NULL)
     {
-      exit(0);
+      // If the user enters "exit" or "quit", terminate the shell with status 0
+      if (strcmp(token[0], "exit") == 0 || strcmp(token[0], "quit") == 0)
+      {
+        exit(0);
+      }
     }
 
     pid_t pid = fork(); // Create a child process
@@ -118,13 +122,14 @@ int main()
     {
       return -1;
     }
-    else if (pid == 0) // Child process
+
+    if (pid == 0) // Child process
     {
       if (execvp(token[0], token) == -1)
       {
         fprintf(stderr, "%s: Command not found.\n", token[0]);
+        exit(1);
       }
-      exit(1);
     }
     else
     {
