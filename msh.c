@@ -221,15 +221,20 @@ void printPidHistory(PidHistory *ph)
 
 void addCommand(CommandHistory *ch, const char *command)
 {
+  if (command == NULL)
+  {
+    return;
+  }
+
   if (ch->count == COMMAND_HISTORY_SIZE)
   {
-    for (int i = 0; i < COMMAND_HISTORY_SIZE; i++)
+    for (int i = 1; i < COMMAND_HISTORY_SIZE; i++)
     {
       strcpy(ch->commands[i - 1], ch->commands[i]);
     }
     ch->count--;
   }
-  strncpy(ch->commands[ch->count], command, MAX_COMMAND_SIZE);
+  strncpy(ch->commands[ch->count], command, MAX_COMMAND_SIZE - 1);
   ch->commands[ch->count][MAX_COMMAND_SIZE - 1] = '\0';
   ch->count++;
 }
