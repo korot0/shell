@@ -27,7 +27,6 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-
 #define _GNU_SOURCE
 
 #include <stdio.h>
@@ -123,43 +122,48 @@ int main()
       token_count++;
     }
 
-    // Ignore blank line
-    if (token[0] != NULL)
+    if (token[0] == NULL || strlen(token[0]) == 0)
     {
-      // If the user enters "exit" or "quit", terminate the shell with status 0
-      if (strcmp(token[0], "exit") == 0 || strcmp(token[0], "quit") == 0)
-      {
-        exit(0);
-      }
-      // cd command
-      if (strcmp(token[0], "cd") == 0)
-      {
-        if (token[1] == NULL)
-        {
-          chdir(getenv("HOME"));
-        }
-        else
-        {
-          chdir(token[1]);
-        }
+      free(head_ptr);
+      continue;
+    }
 
-        addCommand(&commandHistory, command_string);
-        continue;
-      }
-      // pidhistory command
-      if (strcmp(token[0], "showpids") == 0)
+    // If the user enters "exit" or "quit", terminate the shell with status 0
+    if (strcmp(token[0], "exit") == 0 || strcmp(token[0], "quit") == 0)
+    {
+      exit(0);
+    }
+
+    // cd command
+    if (strcmp(token[0], "cd") == 0)
+    {
+      if (token[1] == NULL)
       {
-        addCommand(&commandHistory, command_string);
-        printPidHistory(&pidHistory);
-        continue;
+        chdir(getenv("HOME"));
       }
-      // command history command
-      if (strcmp(token[0], "history") == 0)
+      else
       {
-        addCommand(&commandHistory, command_string);
-        printCommandHistory(&commandHistory);
-        continue;
+        chdir(token[1]);
       }
+
+      addCommand(&commandHistory, command_string);
+      continue;
+    }
+
+    // pidhistory command
+    if (strcmp(token[0], "showpids") == 0)
+    {
+      addCommand(&commandHistory, command_string);
+      printPidHistory(&pidHistory);
+      continue;
+    }
+
+    // command history command
+    if (strcmp(token[0], "history") == 0)
+    {
+      addCommand(&commandHistory, command_string);
+      printCommandHistory(&commandHistory);
+      continue;
     }
 
     pid_t pid = fork(); // Create a child process
@@ -179,9 +183,12 @@ int main()
     }
     else
     {
+      if (wait(NULL) == -1)
+      {
+        continue;
+      }
       addPid(&pidHistory, pid);
       addCommand(&commandHistory, command_string);
-      wait(NULL);
     }
 
     free(head_ptr);
@@ -195,7 +202,7 @@ void addPid(PidHistory *ph, pid_t pid)
 {
   if (ph->count == PID_HISTORY_SIZE)
   {
-    for (int i = 0; i < PID_HISTORY_SIZE; i++)
+    for (int i = 1; i < PID_HISTORY_SIZE; i++)
     {
       ph->pids[i - 1] = ph->pids[i];
     }
@@ -221,7 +228,7 @@ void printPidHistory(PidHistory *ph)
 
 void addCommand(CommandHistory *ch, const char *command)
 {
-  if (command == NULL)
+  if (command == NULL || strcmp(command, "\n") == 0)
   {
     return;
   }
@@ -241,12 +248,6 @@ void addCommand(CommandHistory *ch, const char *command)
 
 void printCommandHistory(CommandHistory *ch)
 {
-  if (ch->count == 0)
-  {
-    printf("No command history yet./n");
-    return;
-  }
-
   for (int i = 0; i < ch->count; i++)
   {
     printf("%d: %s", i, ch->commands[i]);
