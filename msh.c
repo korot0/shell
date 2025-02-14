@@ -53,6 +53,7 @@
 #define MAX_NUM_ARGUMENTS 12 // Mav shell only supports ten arguments
 
 #define PID_HISTORY_SIZE 15
+#define COMMAND_HISTORY_SIZE 15
 
 // Circular array structure
 typedef struct
@@ -61,14 +62,23 @@ typedef struct
   int count; // Keep track of how many PIDs are stored
 } PidHistory;
 
+typedef struct
+{
+  char commands[COMMAND_HISTORY_SIZE][MAX_COMMAND_SIZE];
+  int count;
+} CommandHistory;
+
 // Function prototypes
 void printPidHistory(PidHistory *ph);
 void addPid(PidHistory *ph, pid_t pid);
+void printCommandHistory(CommandHistory *ch);
+void addCommand(CommandHistory *ch, const char *command);
 
 int main()
 {
 
   PidHistory pidHistory = {.count = 0};
+  CommandHistory commandHistory = {.count = 0};
 
   char *command_string = (char *)malloc(MAX_COMMAND_SIZE);
 
@@ -113,14 +123,6 @@ int main()
       token_count++;
     }
 
-    // // Now print the tokenized input as a debug check
-    // // \TODO Remove this code and replace with your shell functionality
-    // int token_index = 0;
-    // for (token_index = 0; token_index < token_count; token_index++)
-    // {
-    //   printf("token[%d] = %s\n", token_index, token[token_index]);
-    // }
-
     // Ignore blank line
     if (token[0] != NULL)
     {
@@ -140,12 +142,22 @@ int main()
         {
           chdir(token[1]);
         }
+
+        addCommand(&commandHistory, command_string);
         continue;
       }
       // pidhistory command
-      if (strcmp(token[0], "pidhistory") == 0)
+      if (strcmp(token[0], "showpids") == 0)
       {
+        addCommand(&commandHistory, command_string);
         printPidHistory(&pidHistory);
+        continue;
+      }
+      // command history command
+      if (strcmp(token[0], "history") == 0)
+      {
+        addCommand(&commandHistory, command_string);
+        printCommandHistory(&commandHistory);
         continue;
       }
     }
@@ -168,7 +180,7 @@ int main()
     else
     {
       addPid(&pidHistory, pid);
-      printf("%d\n", pid); // Store pid in circular array
+      addCommand(&commandHistory, command_string);
       wait(NULL);
     }
 
@@ -204,5 +216,34 @@ void printPidHistory(PidHistory *ph)
   for (int i = 0; i < ph->count; i++)
   {
     printf("%d: %d\n", i, ph->pids[i]);
+  }
+}
+
+void addCommand(CommandHistory *ch, const char *command)
+{
+  if (ch->count == COMMAND_HISTORY_SIZE)
+  {
+    for (int i = 0; i < COMMAND_HISTORY_SIZE; i++)
+    {
+      strcpy(ch->commands[i - 1], ch->commands[i]);
+    }
+    ch->count--;
+  }
+  strncpy(ch->commands[ch->count], command, MAX_COMMAND_SIZE);
+  ch->commands[ch->count][MAX_COMMAND_SIZE - 1] = '\0';
+  ch->count++;
+}
+
+void printCommandHistory(CommandHistory *ch)
+{
+  if (ch->count == 0)
+  {
+    printf("No command history yet./n");
+    return;
+  }
+
+  for (int i = 0; i < ch->count; i++)
+  {
+    printf("%d: %s", i, ch->commands[i]);
   }
 }
